@@ -1,18 +1,7 @@
-name = "autumn-boat-dd1e"  # Name of your Cloudflare Worker
-type = "javascript"  # Type of Worker (JavaScript)
+name = "your-worker-name"
+type = "javascript"  # Make sure this is set correctly
 
-# Cloudflare account information
-account_id = "4806f2425c6560e67d083f843b83dd5d"  # Replace with your actual Cloudflare account ID
-workers_dev = true  # Set to true to deploy to workers.dev (default behavior)
-compatibility_date = "2024-12-02"  # Current date
-
-# KV Namespace binding
-kv_namespaces = [
-  { binding = "MY_KV_NAMESPACE", id = "2fc1c9cc83b64bd29f30be0ab34599a4" }  # Replace with your actual KV namespace ID
-]
-
-# Optional: If using a custom domain for production
 [env.production]
-name = "autumn-boat-dd1e-prod"  # Name for the production environment (optional)
-route = "https://your-domain.com/*"  # Custom domain for the production environment (optional)
-zone_id = "your-zone-id"  # Cloudflare Zone ID for the domain (optional)
+GITHUB_REPO = "username/repository"
+GITHUB_TOKEN = "your-github-token"
+GITHUB_BRANCH = "main"  # Optional, set default branch
