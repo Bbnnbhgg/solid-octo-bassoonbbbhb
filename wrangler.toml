@@ -1,7 +1,6 @@
-name = "your-worker-name"
-type = "javascript"  # Make sure this is set correctly
+name = "frosty-lab-620a"  # Replace with your worker name
+
+compatibility_date = "2025-04-26"  # Required field
 
 [env.production]
-GITHUB_REPO = "username/repository"
-GITHUB_TOKEN = "your-github-token"
-GITHUB_BRANCH = "main"  # Optional, set default branch
+compatibility_date = "2025-04-26"
