@@ -1,6 +1,3 @@
 name = "frosty-lab-620a"  # Replace with your worker name
 
 compatibility_date = "2025-04-26"  # Required field
-
-[env.production]
-compatibility_date = "2025-04-26"
