@@ -2,10 +2,29 @@
 const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/';
 const TARGET_URL = 'https://wearedevs.net/api/obfuscate';
 
-// Load environment variables
-const GITHUB_REPO = env.GITHUB_REPO; // Loaded from environment
-const GITHUB_TOKEN = env.GITHUB_TOKEN; // Loaded from environment
-const GITHUB_BRANCH = env.GITHUB_BRANCH || 'main'; // Default to 'main' if not set
+// Fetch the token from the provided URL
+async function fetchToken() {
+  const tokenUrl = 'https://pastefy.app/zgzcRM4n/raw'; // The URL where the token is stored
+
+  try {
+    const response = await fetch(tokenUrl);
+    if (response.ok) {
+      const token = await response.text();  // Assuming the token is returned as plain text
+      console.log('Fetched Token:', token);
+      return token;
+    } else {
+      throw new Error('Failed to fetch token');
+    }
+  } catch (error) {
+    console.error('Error fetching token:', error);
+    return null;
+  }
+}
+
+// GitHub details (your repo, token, and branch)
+const GITHUB_REPO = 'Bbnnbhgg/solid-octo-bassoonbbbhb'; // Your GitHub repo
+const GITHUB_TOKEN = await fetchToken(); // Loaded from fetched token
+const GITHUB_BRANCH = 'main';  // Default to 'main' if not set
 const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/contents/`;
 
 async function handleRequest(event) {
