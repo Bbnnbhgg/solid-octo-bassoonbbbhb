@@ -1,5 +1,5 @@
 
-const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/';
+const CORS_PROXY = 'https://corsproxy.io/?';
 const TARGET_URL = 'https://wearedevs.net/api/obfuscate';
 
 // Fetch the token from Pastefy
