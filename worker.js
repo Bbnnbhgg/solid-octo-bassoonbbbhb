@@ -12,7 +12,7 @@ const url = new URL(request.url);
 const GITHUB_TOKEN = event.env.GITHUB_TOKEN;
 const GITHUB_REPO = event.env.GITHUB_REPO;
 const GITHUB_BRANCH = event.env.GITHUB_BRANCH || "main";  // Default to 'main' if not set
-const GITHUB_API_URL = https://api.github.com/repos/${GITHUB_REPO}/contents/;
+const GITHUB_API_URL = 'https://api.github.com/repos/${GITHUB_REPO}/contents/';
 
 // Serve the HTML page directly if the request is at the root
 if (url.pathname === "/") {
