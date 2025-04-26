@@ -2,12 +2,7 @@
 const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/';
 const TARGET_URL = 'https://wearedevs.net/api/obfuscate';
 
-// GitHub details (your repo, token, and branch)
-const GITHUB_REPO = 'Bbnnbhgg/solid-octo-bassoonbbbhb'; // Your GitHub repo
-const GITHUB_BRANCH = 'main';  // Default to 'main' if not set
-const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/contents/`;
-
-// Function to fetch the token
+// Fetch the token from the provided URL
 async function fetchToken() {
   const tokenUrl = 'https://pastefy.app/zgzcRM4n/raw'; // The URL where the token is stored
 
@@ -26,41 +21,15 @@ async function fetchToken() {
   }
 }
 
-// Upload the obfuscated script to GitHub
-async function uploadToGitHub(fileName, fileContent, GITHUB_TOKEN) {
-  const contentBase64 = btoa(fileContent); // Convert content to Base64
-  const commitMessage = "Upload obfuscated script";
+// GitHub details (your repo, token, and branch)
+const GITHUB_REPO = 'Bbnnbhgg/solid-octo-bassoonbbbhb'; // Your GitHub repo
+const GITHUB_TOKEN = await fetchToken(); // Loaded from fetched token
+const GITHUB_BRANCH = 'main';  // Default to 'main' if not set
+const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/contents/`;
 
-  const body = JSON.stringify({
-    message: commitMessage,
-    content: contentBase64,
-    branch: GITHUB_BRANCH,  // Use the branch set in the environment variable
-  });
-
-  const response = await fetch(GITHUB_API_URL + fileName, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `token ${GITHUB_TOKEN}`,
-    },
-    body,
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to upload to GitHub: ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  return data.content.html_url;  // Return the URL of the uploaded file on GitHub
-}
-
-// The main request handler
 async function handleRequest(event) {
   const request = event.request;
   const url = new URL(request.url);
-
-  // Fetch the GitHub token (use inside an async function)
-  const GITHUB_TOKEN = await fetchToken(); // Fetch the token before processing
 
   // Serve the HTML page directly if the request is at the root
   if (url.pathname === "/") {
@@ -90,7 +59,7 @@ async function handleRequest(event) {
 
       // Log the entire response for debugging
       const responseText = await response.text(); // Read the response as text
-      console.log('Obfuscation API Response:', responseText);
+      console.log('Obfuscation API Response:', responseText);  // Log the original response
 
       // Check for a successful response
       if (!response.ok) {
@@ -101,12 +70,15 @@ async function handleRequest(event) {
       // Parse the response
       const data = JSON.parse(responseText);
 
+      // You can also log the parsed data to see it
+      console.log('Parsed Obfuscation API Data:', data);
+
       if (data && data.obfuscated) {
         // Generate a unique filename for the obfuscated script
         const fileName = `obfuscated_${crypto.randomUUID()}.js`;
 
         // Upload the obfuscated script to GitHub
-        const uploadUrl = await uploadToGitHub(fileName, data.obfuscated, GITHUB_TOKEN);
+        const uploadUrl = await uploadToGitHub(fileName, data.obfuscated);
 
         // Return the GitHub URL of the uploaded file
         return new Response(JSON.stringify({ obfuscated: data.obfuscated, githubUrl: uploadUrl }), {
@@ -124,6 +96,34 @@ async function handleRequest(event) {
 
   // Return a 404 for other routes
   return new Response("Not Found", { status: 404 });
+}
+
+// Upload the obfuscated script to GitHub
+async function uploadToGitHub(fileName, fileContent) {
+  const contentBase64 = btoa(fileContent); // Convert content to Base64
+  const commitMessage = "Upload obfuscated script";
+
+  const body = JSON.stringify({
+    message: commitMessage,
+    content: contentBase64,
+    branch: GITHUB_BRANCH,  // Use the branch set in the environment variable
+  });
+
+  const response = await fetch(GITHUB_API_URL + fileName, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `token ${GITHUB_TOKEN}`,
+    },
+    body,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to upload to GitHub: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return data.content.html_url;  // Return the URL of the uploaded file on GitHub
 }
 
 // HTML content to serve
