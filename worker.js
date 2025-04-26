@@ -23,11 +23,17 @@ async function fetchToken() {
 
 // GitHub details (your repo, token, and branch)
 const GITHUB_REPO = 'Bbnnbhgg/solid-octo-bassoonbbbhb'; // Your GitHub repo
-const GITHUB_TOKEN = await fetchToken(); // Loaded from fetched token
 const GITHUB_BRANCH = 'main';  // Default to 'main' if not set
 const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/contents/`;
 
+// Function to get the GitHub token asynchronously
+async function getGitHubToken() {
+  return await fetchToken();
+}
+
+// Function to handle the request
 async function handleRequest(event) {
+  const GITHUB_TOKEN = await getGitHubToken(); // Fetch the token here
   const request = event.request;
   const url = new URL(request.url);
 
