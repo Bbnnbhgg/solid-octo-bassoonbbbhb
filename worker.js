@@ -84,7 +84,7 @@ const response = await fetch(GITHUB_API_URL + fileName, {
 method: "PUT",
 headers: {
 "Content-Type": "application/json",
-"Authorization": token ${GITHUB_TOKEN},
+"Authorization": \token ${GITHUB_TOKEN}`,`
 },
 body,
 });
