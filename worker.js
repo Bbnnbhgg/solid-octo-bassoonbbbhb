@@ -1,8 +1,15 @@
-
 const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/';
 const TARGET_URL = 'https://wearedevs.net/api/obfuscate';
 
-// Fetch the token from the provided URL
+// GitHub details (your repo, token, and branch)
+const GITHUB_REPO = 'Bbnnbhgg/solid-octo-bassoonbbbhb'; // Your GitHub repo
+const GITHUB_BRANCH = 'main';  // Default to 'main' if not set
+const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/contents/`;
+
+// Store the GitHub token for later use
+let GITHUB_TOKEN = null;
+
+// Fetch the token from the provided URL (only fetch once and reuse)
 async function fetchToken() {
   const tokenUrl = 'https://pastefy.app/zgzcRM4n/raw'; // The URL where the token is stored
 
@@ -11,29 +18,22 @@ async function fetchToken() {
     if (response.ok) {
       const token = await response.text();  // Assuming the token is returned as plain text
       console.log('Fetched Token:', token);
-      return token;
+      GITHUB_TOKEN = token;  // Save token for later use
     } else {
       throw new Error('Failed to fetch token');
     }
   } catch (error) {
     console.error('Error fetching token:', error);
-    return null;
   }
-}
-
-// GitHub details (your repo, token, and branch)
-const GITHUB_REPO = 'Bbnnbhgg/solid-octo-bassoonbbbhb'; // Your GitHub repo
-const GITHUB_BRANCH = 'main';  // Default to 'main' if not set
-const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/contents/`;
-
-// Function to get the GitHub token asynchronously
-async function getGitHubToken() {
-  return await fetchToken();
 }
 
 // Function to handle the request
 async function handleRequest(event) {
-  const GITHUB_TOKEN = await getGitHubToken(); // Fetch the token here
+  if (!GITHUB_TOKEN) {
+    // If the token has not been fetched yet, do so before proceeding
+    await fetchToken();
+  }
+
   const request = event.request;
   const url = new URL(request.url);
 
