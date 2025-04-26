@@ -2,49 +2,37 @@
 const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/';
 const TARGET_URL = 'https://wearedevs.net/api/obfuscate';
 
-// GitHub details (your repo, token, and branch)
-const GITHUB_REPO = 'Bbnnbhgg/solid-octo-bassoonbbbhb'; // Your GitHub repo
-const GITHUB_BRANCH = 'main';  // Default to 'main' if not set
-const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/contents/`;
-
-// Store the GitHub token for later use
-let GITHUB_TOKEN = null;
-
-// Fetch the token from the provided URL (only fetch once and reuse)
+// Fetch the token from the provided URL
 async function fetchToken() {
   const tokenUrl = 'https://pastefy.app/zgzcRM4n/raw'; // The URL where the token is stored
 
   try {
-    console.log('Fetching token from:', tokenUrl);
     const response = await fetch(tokenUrl);
     if (response.ok) {
       const token = await response.text();  // Assuming the token is returned as plain text
-      console.log('Token fetched successfully:', token);
-      GITHUB_TOKEN = token;  // Save token for later use
+      console.log('Fetched Token:', token);
+      return token;
     } else {
       throw new Error('Failed to fetch token');
     }
   } catch (error) {
     console.error('Error fetching token:', error);
+    return null;
   }
 }
 
-// Function to handle the request
+// GitHub details (your repo, token, and branch)
+const GITHUB_REPO = 'Bbnnbhgg/solid-octo-bassoonbbbhb'; // Your GitHub repo
+const GITHUB_TOKEN = await fetchToken(); // Loaded from fetched token
+const GITHUB_BRANCH = 'main';  // Default to 'main' if not set
+const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/contents/`;
+
 async function handleRequest(event) {
-  console.log('Handling request:', event.request.url);
-
-  if (!GITHUB_TOKEN) {
-    // If the token has not been fetched yet, do so before proceeding
-    console.log('Token not found, fetching token...');
-    await fetchToken();
-  }
-
   const request = event.request;
   const url = new URL(request.url);
 
   // Serve the HTML page directly if the request is at the root
   if (url.pathname === "/") {
-    console.log('Serving the HTML page...');
     return new Response(htmlContent, {
       headers: { "Content-Type": "text/html; charset=utf-8" },
     });
@@ -56,11 +44,9 @@ async function handleRequest(event) {
     const inputScript = body.script;
 
     if (!inputScript) {
-      console.log('No script provided in the request.');
       return new Response(JSON.stringify({ error: "No script provided" }), { status: 400 });
     }
 
-    console.log('Obfuscating script...');
     try {
       // Request to the obfuscation API
       const response = await fetch(CORS_PROXY + TARGET_URL, {
@@ -71,29 +57,32 @@ async function handleRequest(event) {
         body: JSON.stringify({ script: inputScript }),
       });
 
+      // Log the entire response for debugging
+      const responseText = await response.text(); // Read the response as text
+      console.log('Obfuscation API Response:', responseText);
+
+      // Check for a successful response
       if (!response.ok) {
-        console.log('Obfuscation API request failed with status:', response.status);
-        return new Response(JSON.stringify({ error: "Failed to obfuscate script" }), { status: 500 });
+        console.error(`Obfuscation API request failed with status: ${response.status}`);
+        return new Response(JSON.stringify({ error: `Obfuscation API request failed with status: ${response.status}`, details: responseText }), { status: response.status });
       }
 
-      const data = await response.json();
-      console.log('Obfuscation API response:', data);
+      // Parse the response
+      const data = JSON.parse(responseText);
 
       if (data && data.obfuscated) {
         // Generate a unique filename for the obfuscated script
         const fileName = `obfuscated_${crypto.randomUUID()}.js`;
 
         // Upload the obfuscated script to GitHub
-        console.log('Uploading obfuscated script to GitHub...');
         const uploadUrl = await uploadToGitHub(fileName, data.obfuscated);
 
         // Return the GitHub URL of the uploaded file
-        console.log('Obfuscated script uploaded successfully. GitHub URL:', uploadUrl);
         return new Response(JSON.stringify({ obfuscated: data.obfuscated, githubUrl: uploadUrl }), {
           headers: { "Content-Type": "application/json" },
         });
       } else {
-        console.log('Obfuscation API response did not include obfuscated data.');
+        console.error('Unexpected response format:', data);
         return new Response(JSON.stringify({ error: "Unexpected response format" }), { status: 500 });
       }
     } catch (error) {
@@ -103,14 +92,11 @@ async function handleRequest(event) {
   }
 
   // Return a 404 for other routes
-  console.log('Route not found, returning 404...');
   return new Response("Not Found", { status: 404 });
 }
 
 // Upload the obfuscated script to GitHub
 async function uploadToGitHub(fileName, fileContent) {
-  console.log('Preparing to upload obfuscated script to GitHub:', fileName);
-
   const contentBase64 = btoa(fileContent); // Convert content to Base64
   const commitMessage = "Upload obfuscated script";
 
@@ -120,7 +106,6 @@ async function uploadToGitHub(fileName, fileContent) {
     branch: GITHUB_BRANCH,  // Use the branch set in the environment variable
   });
 
-  console.log('Sending upload request to GitHub API...');
   const response = await fetch(GITHUB_API_URL + fileName, {
     method: "PUT",
     headers: {
@@ -131,12 +116,10 @@ async function uploadToGitHub(fileName, fileContent) {
   });
 
   if (!response.ok) {
-    console.log('GitHub upload failed:', response.statusText);
     throw new Error(`Failed to upload to GitHub: ${response.statusText}`);
   }
 
   const data = await response.json();
-  console.log('GitHub upload successful:', data);
   return data.content.html_url;  // Return the URL of the uploaded file on GitHub
 }
 
