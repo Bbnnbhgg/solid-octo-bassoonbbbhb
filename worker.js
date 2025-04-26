@@ -1,5 +1,5 @@
 
-const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+const CORS_PROXY = 'https://cool-forest-4b9e.hiplitehehe.workers.dev/?url=';
 const TARGET_URL = 'https://wearedevs.net/api/obfuscate';
 
 // Fetch the token from Pastefy
